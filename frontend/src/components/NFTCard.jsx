@@ -65,12 +65,12 @@ function NFTCard({ nft }) {
 
         <div className="space-y-4">
           {metadata.description && (
-            <div className="bg-gray-900/30 rounded-lg p-3">
+            <div className="bg-gray-900/40 rounded-lg p-3 border border-gray-700/50">
               <p className="text-gray-300 text-md">{metadata.description}</p>
             </div>
           )}
 
-          <div className="bg-gray-900/30 rounded-lg p-3 space-y-3">
+          <div className="bg-gray-900/40 rounded-lg p-3 space-y-3 border border-gray-700/50">
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-md">Token ID</span>
               <span className="font-medium text-gray-200">{nft.tokenId}</span>
