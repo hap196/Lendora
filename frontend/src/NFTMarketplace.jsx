@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import NFTCard from "./components/NFTCard";
+import MintModal from "./components/MintModal";
 
 function NFTMarketplace({ refreshTrigger }) {
   const [nfts, setNfts] = useState([]);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const fetchNFTs = async () => {
     try {
@@ -21,20 +23,26 @@ function NFTMarketplace({ refreshTrigger }) {
   }, [refreshTrigger]);
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-12 py-8">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-800">Available NFTs</h2>
+        <h2 className="text-3xl font-bold text-white">Available NFTs</h2>
         <button
-          onClick={fetchNFTs}
-          className="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg 
-                   transition-colors duration-200 flex items-center gap-2"
+          onClick={() => setIsModalOpen(true)}
+          className="bg-blue-600 text-white px-6 py-2 rounded-lg 
+                   hover:bg-blue-700 transition-colors text-lg font-medium
+                   flex items-center gap-2"
         >
-          <span>🔄</span> Refresh NFTs
+          <span>Mint NFT</span>
+          <span className="text-xl">+</span>
         </button>
       </div>
+
+      {/* Modal */}
+      <MintModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+
       {nfts.length === 0 ? (
-        <div className="text-center py-12 bg-gray-50 rounded-lg">
-          <p className="text-gray-500 text-lg">No NFTs available</p>
+        <div className="text-center py-12 bg-gray-800/30 backdrop-blur-sm rounded-lg border border-gray-700">
+          <p className="text-gray-400 text-lg">No NFTs available</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

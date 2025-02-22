@@ -1,7 +1,6 @@
 import React, { useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import NFTMarketplace from "./NFTMarketplace";
-import Mint from "./Mint";
 import Navbar from "./components/Navbar";
 import Home from "./Home";
 import StarryBackground from "./components/StarryBackground";
@@ -19,7 +18,7 @@ function App() {
           path="/marketplace"
           element={<NFTMarketplace refreshTrigger={refreshTrigger} />}
         />
-        <Route path="/mint" element={<Mint />} />
+        <Route path="/profile" element={<Home />} />
       </Routes>
     </div>
   );
