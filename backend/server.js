@@ -18,7 +18,7 @@ const { createLoanNFT } = require("./mintNFT"); // Import Loan NFT Function
 // ✅ Initialize Express App
 const app = express();
 app.use(express.json({ limit: "10mb" }));
-app.use(cors({ origin: "http://localhost:3000" }));
+app.use(cors());
 
 // ✅ Directly Hardcoded Credentials (No .env needed)
 const OPERATOR_ID = AccountId.fromString("0.0.5520061");
