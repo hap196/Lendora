@@ -41,6 +41,13 @@ function NFTCard({ nft }) {
     );
   }
 
+  // Get ownership percentage from metadata, default to 100% if N/A
+  const ownershipPercentage = (
+    metadata?.properties?.ownership_percentage ||
+    metadata?.ownership?.total_percentage ||
+    100
+  ).toString();
+
   return (
     <div className="bg-gray-800/40 backdrop-blur-md rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-700">
       <div className="p-6">
@@ -79,6 +86,12 @@ function NFTCard({ nft }) {
               <span className="text-gray-400 text-md">Creator</span>
               <span className="font-medium text-gray-200">
                 {metadata.creator || "Unknown"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-gray-400 text-md">Ownership</span>
+              <span className="font-medium text-gray-200">
+                {ownershipPercentage}%
               </span>
             </div>
           </div>

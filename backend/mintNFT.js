@@ -109,6 +109,7 @@ async function createLoanNFT(loanAmount, documentFilePath) {
       format: "HIP412@2.0.0",
       properties: {
         external_url: `https://lendora.com/loan`,
+        ownership_percentage: 100,
       },
       files: [
         {
@@ -118,6 +119,15 @@ async function createLoanNFT(loanAmount, documentFilePath) {
           type: "application/pdf",
         },
       ],
+      ownership: {
+        total_percentage: 100,
+        holders: [
+          {
+            account_id: TREASURY_ACCOUNT_ID,
+            percentage: 100,
+          },
+        ],
+      },
     };
 
     // ✅ Upload Metadata to IPFS
