@@ -22,8 +22,8 @@ const StarryBackground = () => {
           container.appendChild(star);
         }
 
-        // Create blue orbs
-        for (let i = 0; i < 5; i++) {
+        // Create blue orbs (reduced from 5 to 3)
+        for (let i = 0; i < 3; i++) {
           const orb = document.createElement("div");
           orb.className = "blue-orb";
           orb.style.left = `${Math.random() * 100}vw`;
@@ -31,8 +31,8 @@ const StarryBackground = () => {
           container.appendChild(orb);
         }
 
-        // Create green orbs
-        for (let i = 0; i < 5; i++) {
+        // Create green orbs (reduced from 5 to 3)
+        for (let i = 0; i < 3; i++) {
           const orb = document.createElement("div");
           orb.className = "green-orb";
           orb.style.left = `${Math.random() * 100}vw`;
