@@ -23,7 +23,7 @@ function NFTMarketplace({ refreshTrigger }) {
   }, [refreshTrigger]);
 
   return (
-    <div className="container mx-auto max-w-6xl py-8">
+    <div className="container mx-auto max-w-6xl px-4 py-8">
       <div className="flex justify-between items-center mb-8">
         <h2 className="text-3xl font-bold text-white">Available NFTs</h2>
         <button
