@@ -188,4 +188,4 @@ async function createLoanNFT(loanAmount, documentFilePath) {
   }
 }
 
-module.exports = { createLoanNFT };
+module.exports = { createLoanNFT, uploadToIPFS };

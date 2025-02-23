@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import BuyModal from "./BuyModal";
+import axios from "axios";
 
 function NFTCard({ nft }) {
   const [metadata, setMetadata] = useState(null);
@@ -35,9 +36,27 @@ function NFTCard({ nft }) {
     fetchMetadata();
   }, [nft.metadata]);
 
-  const handleBuy = (nft, amount) => {
-    // TODO: Implement buy logic
-    console.log("Buying fraction:", { nft, amount });
+  const handleBuy = async (nft, amount) => {
+    try {
+      // For demo purposes, using a dummy buyer account
+      const buyerAccountId = "dummyuser";
+      
+      const response = await axios.post("http://localhost:3001/update-nft-ownership", {
+        tokenId: nft.tokenId,
+        serialNumber: nft.serialNumber,
+        metadata: metadata,
+        buyerAccountId: buyerAccountId,
+        purchaseAmount: amount
+      });
+
+      if (response.data.success) {
+        // Update the local metadata state
+        setMetadata(response.data.updatedMetadata);
+        console.log("Successfully updated NFT ownership:", response.data.updatedMetadata);
+      }
+    } catch (error) {
+      console.error("Error updating NFT ownership:", error);
+    }
   };
 
   if (isLoading) {

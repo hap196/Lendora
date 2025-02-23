@@ -13,7 +13,7 @@ const {
   TokenId,
 } = require("@hashgraph/sdk");
 
-const { createLoanNFT } = require("./mintNFT"); // Import Loan NFT Function
+const { createLoanNFT, uploadToIPFS } = require("./mintNFT"); // Import both functions
 
 // ✅ Initialize Express App
 const app = express();
@@ -111,6 +111,82 @@ app.get("/all-nfts", async (req, res) => {
       "❌ Error fetching NFTs:",
       error.response ? error.response.data : error.message
     );
+    res.status(500).json({ error: error.message });
+  }
+});
+
+// Add this function after your existing imports
+async function uploadUpdatedMetadata(metadata) {
+  try {
+    console.log("📂 Uploading updated metadata to IPFS...");
+    const metadataBuffer = Buffer.from(JSON.stringify(metadata));
+    const updatedMetadataUrl = await uploadToIPFS(
+      metadataBuffer,
+      `updated-metadata-${Date.now()}.json`
+    );
+    console.log("✅ Updated metadata uploaded to IPFS:", updatedMetadataUrl);
+    return updatedMetadataUrl;
+  } catch (error) {
+    console.error("❌ Error uploading updated metadata:", error);
+    throw error;
+  }
+}
+
+// Add this endpoint after your existing endpoints
+app.post("/update-nft-ownership", async (req, res) => {
+  try {
+    const { tokenId, serialNumber, metadata, buyerAccountId, purchaseAmount } = req.body;
+    
+    // Parse existing metadata if it's a string
+    const currentMetadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
+    
+    // Calculate new ownership percentage based on purchase amount
+    const purchasePercentage = Number(purchaseAmount);
+    
+    // Validate purchase percentage
+    if (purchasePercentage <= 0) {
+      throw new Error("Purchase percentage must be greater than 0");
+    }
+
+    // Calculate remaining percentage on the market
+    const currentMarketPercentage = currentMetadata.ownership.total_percentage;
+    
+    // Check if purchase amount exceeds available percentage
+    if (purchasePercentage > currentMarketPercentage) {
+      throw new Error(`Cannot purchase ${purchasePercentage}%. Only ${currentMarketPercentage}% available.`);
+    }
+    
+    // Update existing holder's percentage
+    const existingHolder = currentMetadata.ownership.holders[0];
+    existingHolder.percentage = existingHolder.percentage - purchasePercentage;
+    
+    // Add new holder
+    currentMetadata.ownership.holders.push({
+      account_id: buyerAccountId,
+      percentage: purchasePercentage
+    });
+
+    // Update total percentage available on the market
+    currentMetadata.ownership.total_percentage = currentMarketPercentage - purchasePercentage;
+
+    // Upload updated metadata to IPFS
+    const updatedMetadataUrl = await uploadUpdatedMetadata(currentMetadata);
+    
+    console.log("✅ NFT ownership updated:", {
+      tokenId,
+      serialNumber,
+      updatedMetadataUrl,
+      remainingPercentage: currentMetadata.ownership.total_percentage,
+      holders: currentMetadata.ownership.holders
+    });
+
+    res.json({ 
+      success: true, 
+      updatedMetadata: currentMetadata,
+      metadataUrl: updatedMetadataUrl
+    });
+  } catch (error) {
+    console.error("❌ Error updating NFT ownership:", error);
     res.status(500).json({ error: error.message });
   }
 });
