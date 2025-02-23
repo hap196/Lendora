@@ -1,3 +1,5 @@
+// api endpoints for minting loan nfts
+
 const {
   TokenCreateTransaction,
   TokenType,
@@ -8,27 +10,29 @@ const {
   TransferTransaction,
   Client,
 } = require("@hashgraph/sdk");
+
 const crypto = require("crypto");
 const fs = require("fs");
 const axios = require("axios");
 const FormData = require("form-data");
+
 require("dotenv").config();
 
-// ✅ Hedera Credentials
+// hedera and pinata credentials
+// hedera is used to create the nft token and mint the nft
+// pinata is used to store the metadata and the loan document
 const OPERATOR_ID = process.env.OPERATOR_ID;
 const OPERATOR_KEY = PrivateKey.fromString(process.env.OPERATOR_KEY);
-
-// ✅ Pinata Credentials
 const PINATA_API_KEY = process.env.PINATA_API_KEY;
 const PINATA_SECRET_KEY = process.env.PINATA_SECRET_KEY;
 const TREASURY_ACCOUNT_ID = process.env.TREASURY_ACCOUNT_ID;
 
-// ✅ Initialize Hedera Client
+// initialize the hedera client
 const client = Client.forTestnet().setOperator(OPERATOR_ID, OPERATOR_KEY);
 
-// ✅ Upload File to IPFS
+// upload a file to ipfs
 async function uploadToIPFS(fileBuffer, fileName) {
-  console.log(`📂 Uploading ${fileName} to IPFS via Pinata...`);
+  console.log(`Uploading ${fileName} to IPFS via Pinata...`);
 
   const formData = new FormData();
   formData.append("file", fileBuffer, fileName);
@@ -47,56 +51,39 @@ async function uploadToIPFS(fileBuffer, fileName) {
     );
 
     const ipfsUrl = `https://ipfs.io/ipfs/${response.data.IpfsHash}`;
-    console.log(`✅ Uploaded ${fileName} to IPFS: ${ipfsUrl}`);
+    console.log(`Uploaded ${fileName} to IPFS: ${ipfsUrl}`);
     return ipfsUrl;
   } catch (error) {
     console.error(
-      "❌ IPFS Upload Error:",
+      "IPFS Upload Error:",
       error.response ? error.response.data : error.message
     );
     throw new Error("Failed to upload to IPFS");
   }
 }
 
-// ✅ Ensure Treasury Account is Associated Before Minting
-async function associateTreasuryWithToken(tokenId) {
-  console.log(
-    `🔹 Associating Treasury Account ${TREASURY_ACCOUNT_ID} with Token ${tokenId}...`
-  );
-
-  const associateTx = new TokenAssociateTransaction()
-    .setAccountId(TREASURY_ACCOUNT_ID)
-    .setTokenIds([tokenId])
-    .freezeWith(client);
-
-  await associateTx.sign(OPERATOR_KEY);
-  await associateTx.execute(client);
-  console.log(
-    `✅ Treasury Account ${TREASURY_ACCOUNT_ID} Associated with Token ID ${tokenId}`
-  );
-}
-
+// create a loan nft
 async function createLoanNFT(loanAmount, documentFilePath) {
   try {
     console.log("🔹 Processing Loan NFT Creation...");
 
-    // ✅ Read Loan Document File
+    // read loan document file that is uploaded
     const documentBuffer = fs.readFileSync(documentFilePath);
 
-    // ✅ Generate SHA-384 Hash of the Document
+    // generate a sha-384 hash of the document
     const documentHash = crypto
       .createHash("sha384")
       .update(documentBuffer)
       .digest("hex");
-    console.log("✅ Document SHA-384 Hash:", documentHash);
+    console.log("Document SHA-384 Hash:", documentHash);
 
-    // ✅ Upload Loan Document to IPFS
+    // upload the loan document to ipfs
     const documentIpfsUrl = await uploadToIPFS(
       documentBuffer,
       "loan-document.pdf"
     );
 
-    // ✅ Create Metadata JSON
+    // create metadata json object
     const metadata = {
       name: `Loan NFT - ${Date.now()}`,
       creator: "Lendora System",
@@ -128,16 +115,16 @@ async function createLoanNFT(loanAmount, documentFilePath) {
       },
     };
 
-    // ✅ Upload Metadata to IPFS
+    // upload the metadata to ipfs
     const metadataIpfsUrl = await uploadToIPFS(
       Buffer.from(JSON.stringify(metadata)),
       "loan-metadata.json"
     );
 
-    // ✅ Generate a new supply key for minting NFTs
+    // generate a new supply key for minting nfts
     const supplyKey = PrivateKey.generate();
 
-    // ✅ Step 1: Create NFT Token on Hedera
+    // create the nft token on hedera
     const nftCreateTx = new TokenCreateTransaction()
       .setTokenName("LoanNFT")
       .setTokenSymbol("LOAN")
@@ -147,11 +134,14 @@ async function createLoanNFT(loanAmount, documentFilePath) {
       .setTreasuryAccountId(OPERATOR_ID)
       .setSupplyType(TokenSupplyType.Infinite)
       .setSupplyKey(supplyKey)
+      // adding the admin key to the token makes the token mutable
+      // need it to be mutable to update the metadata ipfs url in the token memo after shares are purchased
       .setAdminKey(OPERATOR_KEY)
+      // note that we store the metadata ipfs url in the token memo
       .setTokenMemo(metadataIpfsUrl)
       .freezeWith(client);
 
-    // ✅ Sign and submit NFT creation transaction
+    // sign and submit the nft creation transaction
     const nftCreateSign = await nftCreateTx.sign(OPERATOR_KEY);
     const nftCreateSubmit = await nftCreateSign.execute(client);
     const nftCreateRx = await nftCreateSubmit.getReceipt(client);
@@ -161,30 +151,31 @@ async function createLoanNFT(loanAmount, documentFilePath) {
     }
 
     const tokenId = nftCreateRx.tokenId.toString();
-    console.log(`✅ Loan NFT Created! Token ID: ${tokenId}`);
+    console.log(`Loan NFT Created! Token ID: ${tokenId}`);
 
-    // ✅ Step 2: Mint NFT with Metadata
+    // mint the nft with the metadata ipfs url
     const mintTx = new TokenMintTransaction()
       .setTokenId(tokenId)
-      .setMetadata([Buffer.from(metadataIpfsUrl)]) // ✅ Store Metadata Hash in NFT
+      .setMetadata([Buffer.from(metadataIpfsUrl)]) // store the metadata ipfs url in the nft
       .freezeWith(client);
 
-    // ✅ Sign and submit the mint transaction
+    // sign and submit the mint transaction
     const mintTxSign = await mintTx.sign(supplyKey);
     const mintTxSubmit = await mintTxSign.execute(client);
     const mintRx = await mintTxSubmit.getReceipt(client);
 
+    // check if the minting was successful
     if (!mintRx.serials || mintRx.serials.length === 0) {
       throw new Error("Minting NFT failed. No serial number found.");
     }
 
     const serialNumber = mintRx.serials[0];
 
-    console.log(`✅ Minted NFT ${tokenId} with Serial Number: ${serialNumber}`);
+    console.log(`Minted NFT ${tokenId} with Serial Number: ${serialNumber}`);
 
     return { tokenId, serialNumber, metadataIpfsUrl };
   } catch (error) {
-    console.error("❌ Error creating Loan NFT:", error);
+    console.error("Error creating Loan NFT:", error);
     throw new Error("Failed to create Loan NFT.");
   }
 }
