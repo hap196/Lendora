@@ -1,4 +1,4 @@
-// api endpoints for minting loan nfts
+// functions for minting loan nfts
 
 const {
   TokenCreateTransaction,
@@ -6,8 +6,6 @@ const {
   TokenSupplyType,
   PrivateKey,
   TokenMintTransaction,
-  TokenAssociateTransaction,
-  TransferTransaction,
   Client,
 } = require("@hashgraph/sdk");
 
