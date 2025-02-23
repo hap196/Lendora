@@ -1,5 +1,5 @@
 import React from "react";
-import distributedLedger from "./assets/distributed-ledger.png";
+import distributedLedger from "./assets/distributed-ledger-white.png";
 
 function Home() {
   return (
