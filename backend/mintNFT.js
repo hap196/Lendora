@@ -12,19 +12,18 @@ const crypto = require("crypto");
 const fs = require("fs");
 const axios = require("axios");
 const FormData = require("form-data");
+require("dotenv").config();
 
 // ✅ Hedera Credentials
-const OPERATOR_ID = "0.0.5518642";
-const OPERATOR_KEY = PrivateKey.fromString(
-  "3030020100300706052b8104000a04220420b41a003638e8a8791a5effff3d12680197e1a53341ccb24e3bc265c4ccffe44c"
-);
+const OPERATOR_ID = process.env.OPERATOR_ID;
+const OPERATOR_KEY = PrivateKey.fromString(process.env.OPERATOR_KEY);
 
-PINATA_API_KEY = "bea44a5e441036749a63";
-PINATA_JWT =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiIxZDc3MWEyYS0wODZjLTQwM2MtOWNhZS1hNzdkMWNhNDRiNGEiLCJlbWFpbCI6IjI0MGFyeWFuc0BnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJGUkExIn0seyJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MSwiaWQiOiJOWUMxIn1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiYmVhNDRhNWU0NDEwMzY3NDlhNjMiLCJzY29wZWRLZXlTZWNyZXQiOiI4ODcyZmM1MWJkMzBhNTRmMGY3MDkyZThhMTBjMDczYzgxZGFhOGI4YTI2NzNiOWJiOWU3ZjU5YWEyNTY0MmQ1IiwiZXhwIjoxNzcxNzQ2NjI2fQ.U0JpuyBuZ0HKMuf7Y99-X5qISbF9MmiIE7-UE7mFt5I";
-PINATA_SECRET_KEY =
-  "8872fc51bd30a54f0f7092e8a10c073c81daa8b8a2673b9bb9e7f59aa25642d5";
-const TREASURY_ACCOUNT_ID = "0.0.5518642"; // Treasury should own NFTs
+// ✅ Pinata Credentials
+const PINATA_API_KEY = process.env.PINATA_API_KEY;
+const PINATA_SECRET_KEY = process.env.PINATA_SECRET_KEY;
+const TREASURY_ACCOUNT_ID = process.env.TREASURY_ACCOUNT_ID;
+
+// ✅ Initialize Hedera Client
 const client = Client.forTestnet().setOperator(OPERATOR_ID, OPERATOR_KEY);
 
 // ✅ Upload File to IPFS
