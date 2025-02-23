@@ -4,6 +4,7 @@ import NFTMarketplace from "./NFTMarketplace";
 import Navbar from "./components/Navbar";
 import Home from "./Home";
 import StarryBackground from "./components/StarryBackground";
+import Profile from "./Profile";
 
 function App() {
   const [refreshTrigger, setRefreshTrigger] = useState(0); // Used to trigger NFT refresh
@@ -18,7 +19,7 @@ function App() {
           path="/marketplace"
           element={<NFTMarketplace refreshTrigger={refreshTrigger} />}
         />
-        <Route path="/profile" element={<Home />} />
+        <Route path="/profile" element={<Profile />} />
       </Routes>
     </div>
   );
