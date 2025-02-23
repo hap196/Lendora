@@ -109,7 +109,6 @@ async function createLoanNFT(loanAmount, documentFilePath) {
       format: "HIP412@2.0.0",
       properties: {
         external_url: `https://lendora.com/loan`,
-        ownership_percentage: 100,
       },
       files: [
         {
