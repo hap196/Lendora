@@ -6,11 +6,15 @@ function NFTCard({ nft }) {
   const [metadata, setMetadata] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        if (typeof nft.metadata === "string" && nft.metadata.startsWith("http")) {
+        if (
+          typeof nft.metadata === "string" &&
+          nft.metadata.startsWith("http")
+        ) {
           // Fetch from IPFS URL
           const ipfsUrl = nft.metadata;
           const response = await fetch(ipfsUrl);
@@ -32,6 +36,7 @@ function NFTCard({ nft }) {
 
   const handleBuy = async (nft, amount) => {
     try {
+      setIsUpdating(true);
       // For demo purposes, using a dummy buyer account
       const buyerAccountId = "dummyuser";
 
@@ -56,6 +61,8 @@ function NFTCard({ nft }) {
       }
     } catch (error) {
       console.error("Error updating NFT ownership:", error);
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -84,7 +91,15 @@ function NFTCard({ nft }) {
   ));
 
   return (
-    <div className="bg-gray-800/40 backdrop-blur-md rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-700">
+    <div className="relative bg-gray-800/40 backdrop-blur-md rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-700">
+      {isUpdating && (
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center rounded-xl">
+          <div className="text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-2"></div>
+            <p className="text-white text-sm">Updating ownership...</p>
+          </div>
+        </div>
+      )}
       <div className="p-6">
         <div className="mb-4">
           <h3 className="text-xl font-semibold text-white">
