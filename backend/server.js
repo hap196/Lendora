@@ -190,6 +190,7 @@ app.post("/update-nft-ownership", async (req, res) => {
     // Update NFT metadata on Hedera
     const tokenUpdateTx = new TokenUpdateTransaction()
       .setTokenId(TokenId.fromString(tokenId))
+      .setTokenMemo(updatedMetadataUrl) // Add this line to update the memo
       .setMetadata([Buffer.from(updatedMetadataUrl)])
       .freezeWith(client);
 
