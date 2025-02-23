@@ -10,6 +10,13 @@
   }
 }
 
+body {
+  background-color: #000814;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* stars for the background */
 .star {
   position: fixed;
   width: 1.75px;
@@ -18,6 +25,7 @@
   border-radius: 50%;
 }
 
+/* orbs for the background */
 .blue-orb {
   position: fixed;
   width: 300px;
@@ -44,10 +52,4 @@
   border-radius: 50%;
   filter: blur(30px);
   pointer-events: none;
-}
-
-body {
-  background-color: #000814;
-  min-height: 100vh;
-  overflow-x: hidden;
 }

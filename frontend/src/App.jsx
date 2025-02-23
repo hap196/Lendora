@@ -7,7 +7,8 @@ import StarryBackground from "./components/StarryBackground";
 import Profile from "./Profile";
 
 function App() {
-  const [refreshTrigger, setRefreshTrigger] = useState(0); // Used to trigger NFT refresh
+  // used to trigger NFT refresh after minting a new NFT
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   return (
     <div className="min-h-screen relative">

@@ -4,6 +4,7 @@ import distributedLedger from "./assets/distributed-ledger.png";
 function Home() {
   return (
     <div className="container mx-auto px-4 py-16 md:py-32">
+      {/* main content */}
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-16 mb-16 md:mb-32">
           <div className="text-left flex-1">
@@ -17,6 +18,7 @@ function Home() {
               A decentralized platform for tokenizing and managing loan
               documents on the Hedera network
             </p>
+            {/* button to view the marketplace */}
             <div className="flex justify-left gap-4 mt-6 md:mt-8">
               <a
                 href="/marketplace"
@@ -35,6 +37,7 @@ function Home() {
           />
         </div>
 
+        {/* features */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
           <div className="bg-gray-800/40 backdrop-blur-md p-6 md:p-8 rounded-xl shadow-lg border border-gray-700 hover:shadow-xl transition-shadow duration-300">
             <h2 className="text-xl md:text-2xl font-semibold text-white mb-3 md:mb-4">
