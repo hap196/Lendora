@@ -10,7 +10,7 @@ function NFTMarketplace({ refreshTrigger }) {
   const fetchNFTs = async () => {
     try {
       console.log("🔄 Fetching NFTs from server...");
-      const response = await axios.get("http://localhost:3001/all-nfts");
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/all-nfts`);
       console.log("✅ Fetched NFTs:", response.data);
       setNfts(response.data);
     } catch (error) {

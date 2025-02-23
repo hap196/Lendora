@@ -3,6 +3,7 @@ const cors = require("cors");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+require("dotenv").config();
 
 const {
   AccountId,
@@ -24,12 +25,12 @@ const app = express();
 app.use(express.json({ limit: "10mb" }));
 app.use(cors());
 
-// ✅ Directly Hardcoded Credentials (No .env needed)
-const OPERATOR_ID = AccountId.fromString("0.0.5518642");
-const OPERATOR_KEY = PrivateKey.fromString(
-  "3030020100300706052b8104000a04220420b41a003638e8a8791a5effff3d12680197e1a53341ccb24e3bc265c4ccffe44c"
+// ✅ Initialize with Environment Variables
+const OPERATOR_ID = AccountId.fromString(process.env.OPERATOR_ID);
+const OPERATOR_KEY = PrivateKey.fromString(process.env.OPERATOR_KEY);
+const TREASURY_ACCOUNT_ID = AccountId.fromString(
+  process.env.TREASURY_ACCOUNT_ID
 );
-const TREASURY_ACCOUNT_ID = AccountId.fromString("0.0.5518642");
 
 // ✅ Initialize Hedera Client
 const client = Client.forTestnet().setOperator(OPERATOR_ID, OPERATOR_KEY);
@@ -222,6 +223,6 @@ app.post("/update-nft-ownership", async (req, res) => {
   }
 });
 
-// ✅ Start backend on port 3001
-const PORT = 3001;
+// ✅ Start backend on port
+const PORT = process.env.PORT;
 app.listen(PORT, () => console.log(`✅ Backend running on port ${PORT}`));

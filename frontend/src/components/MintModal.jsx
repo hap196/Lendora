@@ -36,7 +36,7 @@ function MintModal({ isOpen, onClose, onSuccess }) {
 
     try {
       const res = await axios.post(
-        "http://localhost:3001/create-loan",
+        `${import.meta.env.VITE_API_URL}/create-loan`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

@@ -9,7 +9,9 @@ const Profile = () => {
   const fetchMyNFTs = async () => {
     try {
       console.log("🔄 Fetching NFTs from server...");
-      const response = await axios.get("http://localhost:3001/all-nfts");
+      const response = await axios.get(
+        `${import.meta.env.VITE_API_URL}/all-nfts`
+      );
 
       // Filter NFTs where metadata shows 0.0.9918642 as holder
       const userNFTs = await Promise.all(

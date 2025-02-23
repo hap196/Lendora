@@ -41,7 +41,7 @@ function NFTCard({ nft }) {
       const buyerAccountId = "0.0.9918642";
 
       const response = await axios.post(
-        "http://localhost:3001/update-nft-ownership",
+        `${import.meta.env.VITE_API_URL}/update-nft-ownership`,
         {
           tokenId: nft.tokenId,
           serialNumber: nft.serialNumber,
