@@ -18,6 +18,10 @@ function NFTMarketplace({ refreshTrigger }) {
     }
   };
 
+  const handleMintSuccess = () => {
+    fetchNFTs();
+  };
+
   useEffect(() => {
     fetchNFTs();
   }, [refreshTrigger]);
@@ -38,7 +42,11 @@ function NFTMarketplace({ refreshTrigger }) {
       </div>
 
       {/* Modal */}
-      <MintModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} />
+      <MintModal 
+        isOpen={isModalOpen} 
+        onClose={() => setIsModalOpen(false)}
+        onSuccess={handleMintSuccess}
+      />
 
       {nfts.length === 0 ? (
         <div className="text-center py-12 bg-gray-800/30 backdrop-blur-sm rounded-lg border border-gray-700">
