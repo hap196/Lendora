@@ -6,7 +6,7 @@ const {
   AccountId,
 } = require("@hashgraph/sdk");
 
-const OPERATOR_ID = AccountId.fromString("0.0.5523363");
+const OPERATOR_ID = AccountId.fromString("0.0.5518642");
 const OPERATOR_KEY = PrivateKey.fromString(
   "3030020100300706052b8104000a04220420f06dd1207140e0f36fcd8addeadd279c7edfb3b1bafb05ee633dd"
 );

@@ -38,7 +38,7 @@ function NFTCard({ nft }) {
     try {
       setIsUpdating(true);
       // For demo purposes, using a dummy buyer account
-      const buyerAccountId = "dummyuser";
+      const buyerAccountId = "0.0.9918642";
 
       const response = await axios.post(
         "http://localhost:3001/update-nft-ownership",

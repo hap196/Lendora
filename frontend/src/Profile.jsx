@@ -11,7 +11,7 @@ const Profile = () => {
       console.log("🔄 Fetching NFTs from server...");
       const response = await axios.get("http://localhost:3001/all-nfts");
 
-      // Filter NFTs where metadata shows dummyuser as holder
+      // Filter NFTs where metadata shows 0.0.9918642 as holder
       const userNFTs = await Promise.all(
         response.data.map(async (nft) => {
           try {
@@ -19,7 +19,7 @@ const Profile = () => {
             const metadataResponse = await fetch(nft.metadata);
             const metadata = await metadataResponse.json();
             return metadata.ownership.holders.some(
-              (holder) => holder.account_id === "dummyuser"
+              (holder) => holder.account_id === "0.0.9918642"
             )
               ? nft
               : null;
