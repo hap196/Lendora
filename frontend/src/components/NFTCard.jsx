@@ -83,7 +83,9 @@ function NFTCard({ nft }) {
   ).toString();
 
   // get all holders information
-  const holders = metadata?.ownership?.holders || [];
+  const holders = (metadata?.ownership?.holders || []).filter(
+    holder => holder.account_id !== "0.0.5518642"
+  );
 
   // format holders for display
   const holdersDisplay = holders.map((holder) => (
