@@ -69,8 +69,19 @@ function NFTCard({ nft }) {
 
   // Get ownership percentage from metadata, default to 100% if N/A
   const ownershipPercentage = (
-    metadata?.properties?.ownership_percentage || 100
+    metadata?.ownership?.total_percentage || 100
   ).toString();
+
+  // Get all holders information
+  const holders = metadata?.ownership?.holders || [];
+
+  // Format holders for display
+  const holdersDisplay = holders.map(holder => (
+    <div key={holder.account_id} className="flex justify-between items-center">
+      <span className="text-gray-400 text-sm">{holder.account_id}</span>
+      <span className="font-medium text-gray-200">{holder.percentage}%</span>
+    </div>
+  ));
 
   return (
     <div className="bg-gray-800/40 backdrop-blur-md rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-700">
@@ -100,11 +111,17 @@ function NFTCard({ nft }) {
               </span>
             </div>
             <div className="flex justify-between items-center">
-              <span className="text-gray-400 text-md">Ownership</span>
+              <span className="text-gray-400 text-md">Available</span>
               <span className="font-medium text-gray-200">
                 {ownershipPercentage}%
               </span>
             </div>
+            {holders.length > 0 && (
+              <div className="mt-2 pt-2 border-t border-gray-700/50">
+                <p className="text-gray-400 text-sm mb-2">Current Holders:</p>
+                {holdersDisplay}
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2 pt-2">

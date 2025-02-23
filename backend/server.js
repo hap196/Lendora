@@ -21,11 +21,11 @@ app.use(express.json({ limit: "10mb" }));
 app.use(cors());
 
 // ✅ Directly Hardcoded Credentials (No .env needed)
-const OPERATOR_ID = AccountId.fromString("0.0.5520061");
+const OPERATOR_ID = AccountId.fromString("0.0.5523363");
 const OPERATOR_KEY = PrivateKey.fromString(
-  "3030020100300706052b8104000a04220420f06dd1207140e0f36fcd8addeadd279c7edfb3e4b49cd5ff3b1bafb05ee633dd"
+  "3030020100300706052b8104000a04220420bccc5151af7f0c4a79d46364787a08a08506bbf1759cd5b7af8ac70ea05468e1"
 );
-const TREASURY_ACCOUNT_ID = AccountId.fromString("0.0.5520061");
+const TREASURY_ACCOUNT_ID = AccountId.fromString("0.0.5523363");
 
 // ✅ Initialize Hedera Client
 const client = Client.forTestnet().setOperator(OPERATOR_ID, OPERATOR_KEY);
