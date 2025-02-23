@@ -95,7 +95,10 @@ function NFTCard({ nft }) {
         <div className="space-y-4">
           {metadata.description && (
             <div className="bg-gray-900/40 rounded-lg p-3 border border-gray-700/50">
-              <p className="text-gray-300 text-md">{metadata.description}</p>
+              <span className="text-gray-400 text-md">Amount: </span>
+              <span className="font-medium text-gray-200">
+                ${metadata.description || "N/A"}
+              </span>
             </div>
           )}
 

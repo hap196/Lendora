@@ -102,7 +102,7 @@ async function createLoanNFT(loanAmount, documentFilePath) {
       name: `Loan NFT - ${Date.now()}`,
       creator: "Lendora System",
       creatorDID: `did:hedera:testnet:fid=${OPERATOR_ID}`,
-      description: `Loan NFT representing a loan of $${loanAmount}`,
+      description: `${loanAmount}`,
       image: "https://myserver.com/loan-nft-preview.png",
       checksum: documentHash,
       type: "application/pdf",
