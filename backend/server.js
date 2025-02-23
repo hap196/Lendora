@@ -11,6 +11,10 @@ const {
   AccountBalanceQuery,
   TokenNftInfoQuery,
   TokenId,
+  TokenUpdateTransaction,
+  TokenCreateTransaction,
+  TokenType,
+  TokenSupplyType,
 } = require("@hashgraph/sdk");
 
 const { createLoanNFT, uploadToIPFS } = require("./mintNFT"); // Import both functions
@@ -94,12 +98,15 @@ app.get("/all-nfts", async (req, res) => {
     let allNfts = [];
 
     for (const nft of nftList) {
+      // Get token info to get memo field
+      const tokenUrl = `https://testnet.mirrornode.hedera.com/api/v1/tokens/${nft.token_id}`;
+      const tokenResponse = await axios.get(tokenUrl);
+      const tokenInfo = tokenResponse.data;
+
       allNfts.push({
         tokenId: nft.token_id,
         serialNumber: nft.serial_number,
-        metadata: nft.metadata
-          ? Buffer.from(nft.metadata, "base64").toString()
-          : "No metadata",
+        metadata: tokenInfo.memo, // Use the memo field which contains our IPFS URL
         owner: nft.account_id,
       });
     }
@@ -132,17 +139,22 @@ async function uploadUpdatedMetadata(metadata) {
   }
 }
 
-// Add this endpoint after your existing endpoints
+/**
+ * ✅ **API: Update NFT Ownership**
+ * Updates the ownership of an NFT
+ */
 app.post("/update-nft-ownership", async (req, res) => {
   try {
-    const { tokenId, serialNumber, metadata, buyerAccountId, purchaseAmount } = req.body;
-    
+    const { tokenId, serialNumber, metadata, buyerAccountId, purchaseAmount } =
+      req.body;
+
     // Parse existing metadata if it's a string
-    const currentMetadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
-    
+    const currentMetadata =
+      typeof metadata === "string" ? JSON.parse(metadata) : metadata;
+
     // Calculate new ownership percentage based on purchase amount
     const purchasePercentage = Number(purchaseAmount);
-    
+
     // Validate purchase percentage
     if (purchasePercentage <= 0) {
       throw new Error("Purchase percentage must be greater than 0");
@@ -150,40 +162,58 @@ app.post("/update-nft-ownership", async (req, res) => {
 
     // Calculate remaining percentage on the market
     const currentMarketPercentage = currentMetadata.ownership.total_percentage;
-    
+
     // Check if purchase amount exceeds available percentage
     if (purchasePercentage > currentMarketPercentage) {
-      throw new Error(`Cannot purchase ${purchasePercentage}%. Only ${currentMarketPercentage}% available.`);
+      throw new Error(
+        `Cannot purchase ${purchasePercentage}%. Only ${currentMarketPercentage}% available.`
+      );
     }
-    
+
     // Update existing holder's percentage
     const existingHolder = currentMetadata.ownership.holders[0];
     existingHolder.percentage = existingHolder.percentage - purchasePercentage;
-    
+
     // Add new holder
     currentMetadata.ownership.holders.push({
       account_id: buyerAccountId,
-      percentage: purchasePercentage
+      percentage: purchasePercentage,
     });
 
     // Update total percentage available on the market
-    currentMetadata.ownership.total_percentage = currentMarketPercentage - purchasePercentage;
+    currentMetadata.ownership.total_percentage =
+      currentMarketPercentage - purchasePercentage;
 
     // Upload updated metadata to IPFS
     const updatedMetadataUrl = await uploadUpdatedMetadata(currentMetadata);
-    
+
+    // Update NFT metadata on Hedera
+    const tokenUpdateTx = new TokenUpdateTransaction()
+      .setTokenId(TokenId.fromString(tokenId))
+      .setMetadata([Buffer.from(updatedMetadataUrl)])
+      .freezeWith(client);
+
+    // Sign with operator key (admin key)
+    const signedTx = await tokenUpdateTx.sign(OPERATOR_KEY);
+    const tokenUpdateSubmit = await signedTx.execute(client);
+    const tokenUpdateRx = await tokenUpdateSubmit.getReceipt(client);
+
+    if (tokenUpdateRx.status.toString() !== "SUCCESS") {
+      throw new Error("Failed to update NFT metadata on Hedera");
+    }
+
     console.log("✅ NFT ownership updated:", {
       tokenId,
       serialNumber,
       updatedMetadataUrl,
       remainingPercentage: currentMetadata.ownership.total_percentage,
-      holders: currentMetadata.ownership.holders
+      holders: currentMetadata.ownership.holders,
     });
 
-    res.json({ 
-      success: true, 
+    res.json({
+      success: true,
       updatedMetadata: currentMetadata,
-      metadataUrl: updatedMetadataUrl
+      metadataUrl: updatedMetadataUrl,
     });
   } catch (error) {
     console.error("❌ Error updating NFT ownership:", error);

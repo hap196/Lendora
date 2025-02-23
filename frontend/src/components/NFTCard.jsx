@@ -10,20 +10,14 @@ function NFTCard({ nft }) {
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
-        if (
-          typeof nft.metadata === "string" &&
-          nft.metadata.startsWith("http")
-        ) {
-          const response = await fetch(nft.metadata);
+        if (typeof nft.metadata === "string" && nft.metadata.startsWith("http")) {
+          // Fetch from IPFS URL
+          const ipfsUrl = nft.metadata;
+          const response = await fetch(ipfsUrl);
           const data = await response.json();
           setMetadata(data);
         } else {
-          // Handle case where metadata might be already parsed
-          setMetadata(
-            typeof nft.metadata === "string"
-              ? JSON.parse(nft.metadata)
-              : nft.metadata
-          );
+          setMetadata(nft.metadata);
         }
       } catch (e) {
         console.error("Error fetching metadata:", e);
@@ -40,19 +34,25 @@ function NFTCard({ nft }) {
     try {
       // For demo purposes, using a dummy buyer account
       const buyerAccountId = "dummyuser";
-      
-      const response = await axios.post("http://localhost:3001/update-nft-ownership", {
-        tokenId: nft.tokenId,
-        serialNumber: nft.serialNumber,
-        metadata: metadata,
-        buyerAccountId: buyerAccountId,
-        purchaseAmount: amount
-      });
+
+      const response = await axios.post(
+        "http://localhost:3001/update-nft-ownership",
+        {
+          tokenId: nft.tokenId,
+          serialNumber: nft.serialNumber,
+          metadata: metadata,
+          buyerAccountId: buyerAccountId,
+          purchaseAmount: amount,
+        }
+      );
 
       if (response.data.success) {
         // Update the local metadata state
         setMetadata(response.data.updatedMetadata);
-        console.log("Successfully updated NFT ownership:", response.data.updatedMetadata);
+        console.log(
+          "Successfully updated NFT ownership:",
+          response.data.updatedMetadata
+        );
       }
     } catch (error) {
       console.error("Error updating NFT ownership:", error);
@@ -76,7 +76,7 @@ function NFTCard({ nft }) {
   const holders = metadata?.ownership?.holders || [];
 
   // Format holders for display
-  const holdersDisplay = holders.map(holder => (
+  const holdersDisplay = holders.map((holder) => (
     <div key={holder.account_id} className="flex justify-between items-center">
       <span className="text-gray-400 text-sm">{holder.account_id}</span>
       <span className="font-medium text-gray-200">{holder.percentage}%</span>

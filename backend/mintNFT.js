@@ -145,9 +145,11 @@ async function createLoanNFT(loanAmount, documentFilePath) {
       .setTokenType(TokenType.NonFungibleUnique)
       .setDecimals(0)
       .setInitialSupply(0)
-      .setTreasuryAccountId(OPERATOR_ID) // Treasury account that holds the NFT
+      .setTreasuryAccountId(OPERATOR_ID)
       .setSupplyType(TokenSupplyType.Infinite)
       .setSupplyKey(supplyKey)
+      .setAdminKey(OPERATOR_KEY)
+      .setTokenMemo(metadataIpfsUrl)
       .freezeWith(client);
 
     // ✅ Sign and submit NFT creation transaction
