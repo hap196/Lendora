@@ -35,6 +35,7 @@ function MintModal({ isOpen, onClose, onSuccess }) {
     formData.append("loanAmount", loanAmount);
 
     try {
+      // mint the loan nft by sending the form data to the server
       const res = await axios.post(
         `${import.meta.env.VITE_API_URL}/create-loan`,
         formData,
@@ -43,7 +44,9 @@ function MintModal({ isOpen, onClose, onSuccess }) {
         }
       );
 
+      // display a message
       setMessage("NFT Minted Successfully!");
+      // close the modal after 2 seconds
       setTimeout(() => {
         handleClose();
       }, 2000);
@@ -51,6 +54,7 @@ function MintModal({ isOpen, onClose, onSuccess }) {
       console.error("Error minting NFT:", error);
       setMessage("Failed to mint NFT.");
     } finally {
+      // reset the loading state
       setIsLoading(false);
     }
   };
@@ -64,14 +68,16 @@ function MintModal({ isOpen, onClose, onSuccess }) {
                     border border-white/20 
                     shadow-[0_0_50px_rgba(255,255,255,0.15),0_0_100px_rgba(59,130,246,0.2)]"
       >
-        {/* Decorative elements */}
         <div className="absolute -top-20 -right-20 w-40 h-40 bg-blue-500/20 rounded-full blur-3xl"></div>
         <div className="absolute -bottom-20 -left-20 w-40 h-40 bg-green-500/20 rounded-full blur-3xl"></div>
         <div className="absolute inset-0 rounded-2xl bg-white/5"></div>
 
+        {/* modal content */}
         <div className="relative">
+          {/* modal header - mint nft*/}
           <div className="flex justify-between items-center mb-8">
             <h2 className="text-2xl font-bold text-white/90">Mint Loan NFT</h2>
+            {/* close button */}
             <button
               onClick={onClose}
               className="text-white/70 hover:text-white/90 transition-colors
@@ -82,6 +88,7 @@ function MintModal({ isOpen, onClose, onSuccess }) {
             </button>
           </div>
 
+          {/* form to mint the loan nft */}
           <div className="space-y-6">
             <div className="flex flex-col">
               <label className="text-lg font-medium text-white/80 mb-2">
@@ -126,8 +133,10 @@ function MintModal({ isOpen, onClose, onSuccess }) {
                        disabled:opacity-50 disabled:cursor-not-allowed
                        flex items-center justify-center gap-2"
             >
+              {/* loading message */}
               {isLoading ? (
                 <>
+                  {/* loading icon */}
                   <svg
                     className="animate-spin h-5 w-5 text-white"
                     xmlns="http://www.w3.org/2000/svg"
@@ -154,7 +163,6 @@ function MintModal({ isOpen, onClose, onSuccess }) {
                 "Mint Loan NFT"
               )}
             </button>
-
             {message && (
               <div className="text-center animate-fade-in">
                 <p className="text-lg font-medium text-white/80">{message}</p>

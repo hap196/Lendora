@@ -8,6 +8,7 @@ function NFTCard({ nft }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
 
+  // fetch metadata from ipfs
   useEffect(() => {
     const fetchMetadata = async () => {
       try {
@@ -15,7 +16,7 @@ function NFTCard({ nft }) {
           typeof nft.metadata === "string" &&
           nft.metadata.startsWith("http")
         ) {
-          // Fetch from IPFS URL
+          // fetch metadata from ipfs url
           const ipfsUrl = nft.metadata;
           const response = await fetch(ipfsUrl);
           const data = await response.json();
@@ -34,10 +35,11 @@ function NFTCard({ nft }) {
     fetchMetadata();
   }, [nft.metadata]);
 
+  // handle buying a fraction of the nft
   const handleBuy = async (nft, amount) => {
     try {
       setIsUpdating(true);
-      // For demo purposes, using a dummy buyer account
+      // for demo purposes, using a dummy buyer account
       const buyerAccountId = "0.0.9918642";
 
       const response = await axios.post(
@@ -52,7 +54,7 @@ function NFTCard({ nft }) {
       );
 
       if (response.data.success) {
-        // Update the local metadata state
+        // update the local metadata state with the updated metadata
         setMetadata(response.data.updatedMetadata);
         console.log(
           "Successfully updated NFT ownership:",
@@ -66,6 +68,7 @@ function NFTCard({ nft }) {
     }
   };
 
+  // display a loading message if the metadata is still loading
   if (isLoading) {
     return (
       <div className="bg-gray-800/40 backdrop-blur-md rounded-xl shadow-lg overflow-hidden p-6 border border-gray-700">
@@ -74,15 +77,15 @@ function NFTCard({ nft }) {
     );
   }
 
-  // Get ownership percentage from metadata, default to 100% if N/A
+  // get ownership percentage from metadata, default to 100% if N/A
   const ownershipPercentage = (
     metadata?.ownership?.total_percentage || 100
   ).toString();
 
-  // Get all holders information
+  // get all holders information
   const holders = metadata?.ownership?.holders || [];
 
-  // Format holders for display
+  // format holders for display
   const holdersDisplay = holders.map((holder) => (
     <div key={holder.account_id} className="flex justify-between items-center">
       <span className="text-gray-400 text-sm">{holder.account_id}</span>
@@ -94,6 +97,7 @@ function NFTCard({ nft }) {
     <div className="relative bg-gray-800/40 backdrop-blur-md rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300 border border-gray-700">
       {isUpdating && (
         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center rounded-xl">
+          {/* loading message */}
           <div className="text-center">
             <div className="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500 mb-2"></div>
             <p className="text-white text-sm">Updating ownership...</p>
@@ -108,6 +112,7 @@ function NFTCard({ nft }) {
         </div>
 
         <div className="space-y-4">
+          {/* amount of the loan */}
           {metadata.description && (
             <div className="bg-gray-900/40 rounded-lg p-3 border border-gray-700/50">
               <span className="text-gray-400 text-md">Amount: </span>
@@ -117,6 +122,7 @@ function NFTCard({ nft }) {
             </div>
           )}
 
+          {/* token id, creator, and available amount */}
           <div className="bg-gray-900/40 rounded-lg p-3 space-y-3 border border-gray-700/50">
             <div className="flex justify-between items-center">
               <span className="text-gray-400 text-md">Token ID</span>
@@ -142,6 +148,7 @@ function NFTCard({ nft }) {
             )}
           </div>
 
+          {/* view doc and buy fraction buttons */}
           <div className="flex gap-2 pt-2">
             {metadata.files && metadata.files.length > 0 && (
               <a

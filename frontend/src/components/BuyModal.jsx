@@ -21,6 +21,7 @@ function BuyModal({ isOpen, onClose, nft, onBuy }) {
             <h2 className="text-xl font-semibold text-white">
               Buy Fraction of Loan
             </h2>
+            {/* close button */}
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-white transition-colors"

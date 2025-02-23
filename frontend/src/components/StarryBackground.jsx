@@ -2,14 +2,14 @@ import React, { useEffect } from "react";
 
 const StarryBackground = () => {
   useEffect(() => {
-    // Create stars
+    // create stars
     const createStars = () => {
       const container = document.getElementById("starry-bg");
-      // Clear existing content
+      // clear existing content
       if (container) {
         container.innerHTML = "";
 
-        // Create stars
+        // create stars
         for (let i = 0; i < 150; i++) {
           const star = document.createElement("div");
           star.className = "star";
@@ -22,7 +22,7 @@ const StarryBackground = () => {
           container.appendChild(star);
         }
 
-        // Create blue orbs (reduced from 5 to 3)
+        // create 3 blue orbs
         for (let i = 0; i < 3; i++) {
           const orb = document.createElement("div");
           orb.className = "blue-orb";
@@ -31,7 +31,7 @@ const StarryBackground = () => {
           container.appendChild(orb);
         }
 
-        // Create green orbs (reduced from 5 to 3)
+        // create 3 green orbs
         for (let i = 0; i < 3; i++) {
           const orb = document.createElement("div");
           orb.className = "green-orb";
@@ -44,7 +44,7 @@ const StarryBackground = () => {
 
     createStars();
 
-    // Cleanup function
+    // cleanup function
     return () => {
       const container = document.getElementById("starry-bg");
       if (container) {
