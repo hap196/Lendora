@@ -212,7 +212,14 @@ function NFTCard({ nft }) {
       <ResellModal
         isOpen={isResellModalOpen}
         onClose={() => setIsResellModalOpen(false)}
-        nft={nft}
+        nft={{
+          ...nft,
+          metadata: metadata,
+          onUpdateMetadata: (updatedMetadata) => {
+            setMetadata(updatedMetadata);
+            setIsResellModalOpen(false);
+          }
+        }}
         userHolding={holders.find(
           (holder) => holder.account_id === "0.0.9918642"
         )}

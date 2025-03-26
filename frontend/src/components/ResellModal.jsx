@@ -15,24 +15,29 @@ function ResellModal({ isOpen, onClose, nft, userHolding }) {
     setIsLoading(true);
     try {
       const response = await axios.post(
-        `${import.meta.env.VITE_API_URL}/resell-nft-share`,
+        `${import.meta.env.VITE_API_URL}/resell-nft`,
         {
           tokenId: nft.tokenId,
           serialNumber: nft.serialNumber,
-          sellerAccountId: "0.0.9918642", // Demo account
-          sellAmount: parseFloat(sellAmount)
+          metadata: nft.metadata,
+          sellerAccountId: "0.0.9918642",
+          buyerAccountId: "0.0.5518642",
+          resellAmount: parseFloat(sellAmount)
         }
       );
 
       if (response.data.success) {
-        setMessage("Share listed for resale successfully!");
+        setMessage("Share resold successfully!");
         setTimeout(() => {
           onClose();
+          if (nft.onUpdateMetadata) {
+            nft.onUpdateMetadata(response.data.updatedMetadata);
+          }
         }, 2000);
       }
     } catch (error) {
-      console.error("Error listing share for resale:", error);
-      setMessage("Failed to list share for resale");
+      console.error("Error reselling share:", error);
+      setMessage(error.response?.data?.error || "Failed to resell share");
     } finally {
       setIsLoading(false);
     }

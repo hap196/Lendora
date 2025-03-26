@@ -148,6 +148,99 @@ router.post("/update-nft-ownership", async (req, res) => {
   }
 });
 
+// resell nft ownership
+router.post("/resell-nft", async (req, res) => {
+  try {
+    const { tokenId, serialNumber, metadata, sellerAccountId, buyerAccountId, resellAmount } = req.body;
+    const currentMetadata =
+      typeof metadata === "string" ? JSON.parse(metadata) : metadata;
+    const resellPercentage = Number(resellAmount);
+
+    if (resellPercentage <= 0) {
+      throw new Error("Resell percentage must be greater than 0");
+    }
+
+    // find the seller in the holders array
+    const sellerIndex = currentMetadata.ownership.holders.findIndex(
+      holder => holder.account_id === sellerAccountId
+    );
+
+    if (sellerIndex === -1) {
+      throw new Error(`Seller ${sellerAccountId} is not a holder of this NFT`);
+    }
+
+    const seller = currentMetadata.ownership.holders[sellerIndex];
+
+    if (resellPercentage > seller.percentage) {
+      throw new Error(
+        `Cannot resell ${resellPercentage}%. Seller only owns ${seller.percentage}%`
+      );
+    }
+
+    // update seller's percentage
+    seller.percentage = seller.percentage - resellPercentage;
+
+    // check if seller has sold all their shares
+    if (seller.percentage === 0) {
+      // remove seller from holders array
+      currentMetadata.ownership.holders.splice(sellerIndex, 1);
+    }
+
+    // check if buyer already exists in holders
+    const buyerIndex = currentMetadata.ownership.holders.findIndex(
+      holder => holder.account_id === buyerAccountId
+    );
+
+    if (buyerIndex !== -1) {
+      // buyer already exists, update their percentage
+      currentMetadata.ownership.holders[buyerIndex].percentage += resellPercentage;
+    } else {
+      // add new buyer to holders array
+      currentMetadata.ownership.holders.push({
+        account_id: buyerAccountId,
+        percentage: resellPercentage,
+      });
+    }
+
+    // note: total_percentage doesn't change in a resell scenario since we're just transferring between holders
+
+    const updatedMetadataUrl = await uploadUpdatedMetadata(currentMetadata);
+
+    const tokenUpdateTx = new TokenUpdateTransaction()
+      .setTokenId(TokenId.fromString(tokenId))
+      .setTokenMemo(updatedMetadataUrl)
+      .setMetadata([Buffer.from(updatedMetadataUrl)])
+      .freezeWith(req.client);
+
+    const signedTx = await tokenUpdateTx.sign(req.operatorKey);
+    const tokenUpdateSubmit = await signedTx.execute(req.client);
+    const tokenUpdateRx = await tokenUpdateSubmit.getReceipt(req.client);
+
+    if (tokenUpdateRx.status.toString() !== "SUCCESS") {
+      throw new Error("Failed to update NFT metadata on Hedera");
+    }
+
+    console.log("NFT resold successfully:", {
+      tokenId,
+      serialNumber,
+      updatedMetadataUrl,
+      sellerAccountId,
+      buyerAccountId,
+      resellPercentage,
+      holders: currentMetadata.ownership.holders,
+    });
+
+    res.json({
+      success: true,
+      updatedMetadata: currentMetadata,
+      metadataUrl: updatedMetadataUrl,
+    });
+  } catch (error) {
+    console.error("Error reselling NFT:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // upload updated metadata
 async function uploadUpdatedMetadata(metadata) {
   try {
