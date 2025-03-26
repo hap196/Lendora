@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import BuyModal from "./BuyModal";
 import axios from "axios";
+import ResellModal from "./ResellModal";
 
 function NFTCard({ nft }) {
   const [metadata, setMetadata] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [isResellModalOpen, setIsResellModalOpen] = useState(false);
 
   // fetch metadata from ipfs
   useEffect(() => {
@@ -68,6 +70,18 @@ function NFTCard({ nft }) {
     }
   };
 
+  // get all holders information
+  const holders = (metadata?.ownership?.holders || []).filter(
+    (holder) => holder.account_id !== "0.0.5518642"
+  );
+
+  // Add this function to check if the current user is a holder
+  const isUserHolder = () => {
+    // For demo purposes, using the same dummy account as in handleBuy
+    const currentUserAccount = "0.0.9918642";
+    return holders.some((holder) => holder.account_id === currentUserAccount);
+  };
+
   // display a loading message if the metadata is still loading
   if (isLoading) {
     return (
@@ -81,11 +95,6 @@ function NFTCard({ nft }) {
   const ownershipPercentage = (
     metadata?.ownership?.total_percentage || 100
   ).toString();
-
-  // get all holders information
-  const holders = (metadata?.ownership?.holders || []).filter(
-    holder => holder.account_id !== "0.0.5518642"
-  );
 
   // format holders for display
   const holdersDisplay = holders.map((holder) => (
@@ -150,14 +159,15 @@ function NFTCard({ nft }) {
             )}
           </div>
 
-          {/* view doc and buy fraction buttons */}
-          <div className="flex gap-2 pt-2">
+          {/* view doc and action buttons in a stacked layout */}
+          <div className="space-y-2 pt-2">
+            {/* View Doc button on top row if it exists */}
             {metadata.files && metadata.files.length > 0 && (
               <a
                 href={metadata.files[0].uri}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex-1 bg-blue-900/50 text-blue-300 text-sm font-medium px-3 py-1.5 
+                className="w-full bg-blue-900/50 text-blue-300 text-sm font-medium px-3 py-1.5 
                          rounded-full hover:bg-blue-800/50 transition-colors duration-200 
                          flex items-center justify-center gap-1.5"
               >
@@ -165,15 +175,31 @@ function NFTCard({ nft }) {
                 <span className="text-base">📄</span>
               </a>
             )}
-            <button
-              onClick={() => setIsModalOpen(true)}
-              className="flex-1 bg-green-900/50 text-green-300 text-sm font-medium px-3 py-1.5 
-                       rounded-full hover:bg-green-800/50 transition-colors duration-200 
-                       flex items-center justify-center gap-1.5"
-            >
-              <span>Buy Fraction</span>
-              <span className="text-base">💰</span>
-            </button>
+
+            {/* Action buttons row */}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="flex-1 bg-green-900/50 text-green-300 text-sm font-medium px-3 py-1.5 
+                         rounded-full hover:bg-green-800/50 transition-colors duration-200 
+                         flex items-center justify-center gap-1.5"
+              >
+                <span>{isUserHolder() ? "Buy More" : "Buy Fraction"}</span>
+                <span className="text-base">💰</span>
+              </button>
+
+              {isUserHolder() && (
+                <button
+                  onClick={() => setIsResellModalOpen(true)}
+                  className="flex-1 bg-purple-900/50 text-purple-300 text-sm font-medium px-3 py-1.5 
+                           rounded-full hover:bg-purple-800/50 transition-colors duration-200 
+                           flex items-center justify-center gap-1.5"
+                >
+                  <span>Resell Share</span>
+                  <span className="text-base">💱</span>
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -182,6 +208,14 @@ function NFTCard({ nft }) {
         onClose={() => setIsModalOpen(false)}
         nft={nft}
         onBuy={handleBuy}
+      />
+      <ResellModal
+        isOpen={isResellModalOpen}
+        onClose={() => setIsResellModalOpen(false)}
+        nft={nft}
+        userHolding={holders.find(
+          (holder) => holder.account_id === "0.0.9918642"
+        )}
       />
     </div>
   );
