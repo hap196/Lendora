@@ -151,7 +151,14 @@ router.post("/update-nft-ownership", async (req, res) => {
 // resell nft ownership
 router.post("/resell-nft", async (req, res) => {
   try {
-    const { tokenId, serialNumber, metadata, sellerAccountId, buyerAccountId, resellAmount } = req.body;
+    const {
+      tokenId,
+      serialNumber,
+      metadata,
+      sellerAccountId,
+      buyerAccountId,
+      resellAmount,
+    } = req.body;
     const currentMetadata =
       typeof metadata === "string" ? JSON.parse(metadata) : metadata;
     const resellPercentage = Number(resellAmount);
@@ -160,9 +167,9 @@ router.post("/resell-nft", async (req, res) => {
       throw new Error("Resell percentage must be greater than 0");
     }
 
-    // find the seller in the holders array
+    // Find the seller in the holders array
     const sellerIndex = currentMetadata.ownership.holders.findIndex(
-      holder => holder.account_id === sellerAccountId
+      (holder) => holder.account_id === sellerAccountId
     );
 
     if (sellerIndex === -1) {
@@ -186,23 +193,46 @@ router.post("/resell-nft", async (req, res) => {
       currentMetadata.ownership.holders.splice(sellerIndex, 1);
     }
 
-    // check if buyer already exists in holders
-    const buyerIndex = currentMetadata.ownership.holders.findIndex(
-      holder => holder.account_id === buyerAccountId
-    );
+    // check if buyer is treasury (0.0.5518642)
+    if (buyerAccountId === "0.0.5518642") {
+      // when selling back to treasury, increase the total_percentage
+      currentMetadata.ownership.total_percentage += resellPercentage;
 
-    if (buyerIndex !== -1) {
-      // buyer already exists, update their percentage
-      currentMetadata.ownership.holders[buyerIndex].percentage += resellPercentage;
+      // check if buyer already exists in holders
+      const buyerIndex = currentMetadata.ownership.holders.findIndex(
+        (holder) => holder.account_id === buyerAccountId
+      );
+
+      if (buyerIndex !== -1) {
+        // buyer already exists, update their percentage
+        currentMetadata.ownership.holders[buyerIndex].percentage +=
+          resellPercentage;
+      } else {
+        // add new buyer to holders array
+        currentMetadata.ownership.holders.push({
+          account_id: buyerAccountId,
+          percentage: resellPercentage,
+        });
+      }
     } else {
-      // add new buyer to holders array
-      currentMetadata.ownership.holders.push({
-        account_id: buyerAccountId,
-        percentage: resellPercentage,
-      });
-    }
+      // if selling to a non-treasury account, total_percentage doesn't change
+      // check if buyer already exists in holders
+      const buyerIndex = currentMetadata.ownership.holders.findIndex(
+        (holder) => holder.account_id === buyerAccountId
+      );
 
-    // note: total_percentage doesn't change in a resell scenario since we're just transferring between holders
+      if (buyerIndex !== -1) {
+        // buyer already exists, update their percentage
+        currentMetadata.ownership.holders[buyerIndex].percentage +=
+          resellPercentage;
+      } else {
+        // add new buyer to holders array
+        currentMetadata.ownership.holders.push({
+          account_id: buyerAccountId,
+          percentage: resellPercentage,
+        });
+      }
+    }
 
     const updatedMetadataUrl = await uploadUpdatedMetadata(currentMetadata);
 
@@ -228,6 +258,7 @@ router.post("/resell-nft", async (req, res) => {
       buyerAccountId,
       resellPercentage,
       holders: currentMetadata.ownership.holders,
+      totalPercentage: currentMetadata.ownership.total_percentage,
     });
 
     res.json({
