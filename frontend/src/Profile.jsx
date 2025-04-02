@@ -1,29 +1,45 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import NFTCard from "./components/NFTCard";
+import { useWalletInterface } from "./wallets/useWalletInterface";
+import { WalletSelectionDialog } from "./components/WalletSelectionDialog";
+import { Button } from "@mui/material";
 
 const Profile = () => {
+  const { accountId, walletInterface } = useWalletInterface();
+  const [open, setOpen] = useState(false);
   const [myNFTs, setMyNFTs] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
 
-  // first, fetch all nfts from server
+  const handleConnect = async () => {
+    if (accountId) {
+      walletInterface?.disconnect();
+    } else {
+      setOpen(true);
+    }
+  };
+
+  useEffect(() => {
+    if (accountId) {
+      setOpen(false);
+    }
+  }, [accountId]);
+
   const fetchMyNFTs = async () => {
     try {
-      console.log("🔄 Fetching NFTs from server...");
       const response = await axios.get(
         `${import.meta.env.VITE_API_URL}/all-nfts`
       );
 
-      // then, filter nfts where metadata shows 0.0.9918642 as holder
       const userNFTs = await Promise.all(
         response.data.map(async (nft) => {
           try {
-            if (!nft.metadata) return null;
+            if (!nft.metadata || !accountId) return null;
             const metadataResponse = await fetch(nft.metadata);
             const metadata = await metadataResponse.json();
-            // return the nft if the metadata shows 0.0.9918642 as holder
+
             return metadata.ownership.holders.some(
-              (holder) => holder.account_id === "0.0.9918642"
+              (holder) => holder.account_id === accountId
             )
               ? nft
               : null;
@@ -34,9 +50,7 @@ const Profile = () => {
         })
       );
 
-      // filter out null values
       const filteredNFTs = userNFTs.filter((nft) => nft !== null);
-      console.log("✅ Filtered NFTs:", filteredNFTs);
       setMyNFTs(filteredNFTs);
     } catch (error) {
       console.error("❌ Error fetching NFTs:", error);
@@ -45,14 +59,34 @@ const Profile = () => {
     }
   };
 
-  // fetch nfts when the component mounts
   useEffect(() => {
-    fetchMyNFTs();
-  }, []);
+    if (accountId) {
+      fetchMyNFTs();
+    }
+  }, [accountId]);
+
+  if (!accountId) {
+    return (
+      <div className="container mx-auto max-w-6xl px-4 py-8">
+        <div className="text-center py-12 bg-gray-800/30 backdrop-blur-sm rounded-lg border border-gray-700">
+          <p className="text-gray-400 text-lg mb-4">
+            Please connect your wallet through WalletConnect to view your NFTs.
+          </p>
+          <Button variant="contained" color="primary" onClick={handleConnect}>
+            Connect Wallet
+          </Button>
+        </div>
+        <WalletSelectionDialog
+          open={open}
+          setOpen={setOpen}
+          onClose={() => setOpen(false)}
+        />
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
-      // display a loading message
       <div className="container mx-auto max-w-6xl px-4 py-8">
         <div className="text-center py-12 bg-gray-800/30 backdrop-blur-sm rounded-lg border border-gray-700">
           <p className="text-gray-400 text-lg">Loading your NFTs...</p>
@@ -63,21 +97,28 @@ const Profile = () => {
 
   return (
     <div className="container mx-auto max-w-6xl px-4 py-8">
-      <h2 className="text-3xl font-bold text-white mb-8">My NFT Portfolio</h2>
+      <h2 className="text-3xl font-bold text-white mb-2">My NFT Portfolio</h2>
+      <p className="text-gray-400 text-sm mb-8">
+        Connected Wallet: {accountId}
+      </p>
 
       {myNFTs.length === 0 ? (
-        // display a message if the user doesn't own any nfts
         <div className="text-center py-12 bg-gray-800/30 backdrop-blur-sm rounded-lg border border-gray-700">
           <p className="text-gray-400 text-lg">You don't own any NFTs yet.</p>
         </div>
       ) : (
-        // display the nfts the user owns
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {myNFTs.map((nft, index) => (
             <NFTCard key={index} nft={nft} />
           ))}
         </div>
       )}
+
+      <WalletSelectionDialog
+        open={open}
+        setOpen={setOpen}
+        onClose={() => setOpen(false)}
+      />
     </div>
   );
 };

@@ -1,12 +1,20 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useWalletInterface } from "../wallets/useWalletInterface"; // ✅ Import wallet info
 
 function ResellModal({ isOpen, onClose, nft, userHolding }) {
   const [sellAmount, setSellAmount] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
 
+  const { accountId } = useWalletInterface(); // ✅ Get logged-in wallet
+
   const handleResell = async () => {
+    if (!accountId) {
+      alert("Please connect your wallet to resell your share.");
+      return;
+    }
+
     if (!sellAmount || sellAmount <= 0 || sellAmount > userHolding.percentage) {
       setMessage("Please enter a valid amount to sell");
       return;
@@ -20,9 +28,9 @@ function ResellModal({ isOpen, onClose, nft, userHolding }) {
           tokenId: nft.tokenId,
           serialNumber: nft.serialNumber,
           metadata: nft.metadata,
-          sellerAccountId: "0.0.9918642",
-          buyerAccountId: "0.0.5518642",
-          resellAmount: parseFloat(sellAmount)
+          sellerAccountId: accountId, // ✅ Use real seller
+          buyerAccountId: "0.0.5518642", // <- Placeholder for the buyer (could become dynamic later)
+          resellAmount: parseFloat(sellAmount),
         }
       );
 
@@ -56,7 +64,6 @@ function ResellModal({ isOpen, onClose, nft, userHolding }) {
             <h2 className="text-xl font-semibold text-white">
               Resell Your Share
             </h2>
-            {/* close button */}
             <button
               onClick={onClose}
               className="text-gray-400 hover:text-white transition-colors"
@@ -77,9 +84,7 @@ function ResellModal({ isOpen, onClose, nft, userHolding }) {
               value={sellAmount}
               onChange={(e) => setSellAmount(e.target.value)}
               max={userHolding?.percentage}
-              className="bg-gray-700/50 text-white px-4 py-2 rounded-lg w-full 
-                       border border-gray-600/50 focus:outline-none focus:border-blue-500/50
-                       transition-colors"
+              className="bg-gray-700/50 text-white px-4 py-2 rounded-lg w-full border border-gray-600/50 focus:outline-none focus:border-blue-500/50 transition-colors"
               placeholder="Enter percentage to sell..."
             />
           </div>
@@ -87,18 +92,14 @@ function ResellModal({ isOpen, onClose, nft, userHolding }) {
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="flex-1 bg-gray-700/50 text-gray-300 text-sm font-medium px-3 py-1.5 
-                       rounded-full hover:bg-gray-600/50 transition-colors duration-200 
-                       flex items-center justify-center"
+              className="flex-1 bg-gray-700/50 text-gray-300 text-sm font-medium px-3 py-1.5 rounded-full hover:bg-gray-600/50 transition-colors duration-200 flex items-center justify-center"
             >
               Cancel
             </button>
             <button
               onClick={handleResell}
               disabled={isLoading}
-              className="flex-1 bg-purple-900/50 text-purple-300 text-sm font-medium px-3 py-1.5 
-                       rounded-full hover:bg-purple-800/50 transition-colors duration-200 
-                       flex items-center justify-center"
+              className="flex-1 bg-purple-900/50 text-purple-300 text-sm font-medium px-3 py-1.5 rounded-full hover:bg-purple-800/50 transition-colors duration-200 flex items-center justify-center"
             >
               {isLoading ? (
                 <>
@@ -141,4 +142,4 @@ function ResellModal({ isOpen, onClose, nft, userHolding }) {
   );
 }
 
-export default ResellModal; 
+export default ResellModal;

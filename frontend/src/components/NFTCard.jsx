@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import BuyModal from "./BuyModal";
 import axios from "axios";
 import ResellModal from "./ResellModal";
+import { useWalletInterface } from "../wallets/useWalletInterface";
 
 function NFTCard({ nft }) {
   const [metadata, setMetadata] = useState(null);
@@ -9,6 +10,7 @@ function NFTCard({ nft }) {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isResellModalOpen, setIsResellModalOpen] = useState(false);
+  const { accountId } = useWalletInterface();
 
   // fetch metadata from ipfs
   useEffect(() => {
@@ -39,24 +41,25 @@ function NFTCard({ nft }) {
 
   // handle buying a fraction of the nft
   const handleBuy = async (nft, amount) => {
+    if (!accountId) {
+      alert("Please connect your wallet to proceed with the purchase.");
+      return;
+    }
+
     try {
       setIsUpdating(true);
-      // for demo purposes, using a dummy buyer account
-      const buyerAccountId = "0.0.9918642";
-
       const response = await axios.post(
         `${import.meta.env.VITE_API_URL}/update-nft-ownership`,
         {
           tokenId: nft.tokenId,
           serialNumber: nft.serialNumber,
           metadata: metadata,
-          buyerAccountId: buyerAccountId,
+          buyerAccountId: accountId, 
           purchaseAmount: amount,
         }
       );
 
       if (response.data.success) {
-        // update the local metadata state with the updated metadata
         setMetadata(response.data.updatedMetadata);
         console.log(
           "Successfully updated NFT ownership:",
@@ -78,7 +81,7 @@ function NFTCard({ nft }) {
   // Add this function to check if the current user is a holder
   const isUserHolder = () => {
     // For demo purposes, using the same dummy account as in handleBuy
-    const currentUserAccount = "0.0.9918642";
+    const currentUserAccount = accountId;
     return holders.some((holder) => holder.account_id === currentUserAccount);
   };
 
@@ -218,7 +221,7 @@ function NFTCard({ nft }) {
           onUpdateMetadata: (updatedMetadata) => {
             setMetadata(updatedMetadata);
             setIsResellModalOpen(false);
-          }
+          },
         }}
         userHolding={holders.find(
           (holder) => holder.account_id === "0.0.9918642"

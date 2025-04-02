@@ -5,24 +5,26 @@ import Navbar from "./components/Navbar";
 import Home from "./Home";
 import StarryBackground from "./components/StarryBackground";
 import Profile from "./Profile";
+import AllWalletsProvider from "./wallets/AllWalletsProvider"; // ✅ default import
 
 function App() {
-  // used to trigger NFT refresh after minting a new NFT
   const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   return (
-    <div className="min-h-screen relative">
-      <StarryBackground />
-      <Navbar />
-      <Routes>
-        <Route path="/" element={<Home />} />
-        <Route
-          path="/marketplace"
-          element={<NFTMarketplace refreshTrigger={refreshTrigger} />}
-        />
-        <Route path="/profile" element={<Profile />} />
-      </Routes>
-    </div>
+    <AllWalletsProvider>
+      <div className="min-h-screen relative">
+        <StarryBackground />
+        <Navbar />
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route
+            path="/marketplace"
+            element={<NFTMarketplace refreshTrigger={refreshTrigger} />}
+          />
+          <Route path="/profile" element={<Profile />} />
+        </Routes>
+      </div>
+    </AllWalletsProvider>
   );
 }
 
